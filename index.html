@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tavola periodica interattiva</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap">
+<style>
+/* Concetto: lezione a schermate su sfondo grigio chiaro, titoli blu navy, pannelli con bordo azzurro (stile Gio_Slide), attività cliccabili in ogni schermata. */
+:root{
+  --bg:#EEF1F5; --panel:#FFFFFF; --ink:#1F2B3A; --muted:#4D6277; --navy:#0B325C; --line:#C9D3DF;
+  --blue:#4A76A5; --accent:#C96A1B; --accent-bg:#FBE9D8; --cyan:#1B7C9E; --cyan-bg:#DDF0F7; --green:#3F7D2A; --green-bg:#E3F1DA;
+  --ok:#1F7A4D; --ok-bg:#DDF3E6; --bad:#B3382C; --bad-bg:#FAE1DD; --btn:#0B325C; --btn-ink:#FFFFFF; --soft:#E4E9F0;
+  --cat-ink:#14213D;
+  --c-alc:#FFB4A2; --c-ter:#FFD8A8; --c-tra:#FFF0A6; --c-alt:#CFE8A9; --c-sem:#A9E0D0; --c-non:#A9D3F5; --c-alo:#C9B8F2; --c-nob:#F3B6DF; --c-lan:#BFD0E8; --c-att:#DCCBB8; --c-nd:#DDE3EA;
+  --f-head:'Poppins','Segoe UI',Arial,sans-serif; --f-body:'Nunito Sans','Segoe UI',Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141B25; --panel:#1D2734; --ink:#E6ECF3; --muted:#A9B8C8; --navy:#A8CEF5; --line:#34455A;
+  --blue:#5C8DBF; --accent:#F0A260; --accent-bg:#3A2A1B; --cyan:#6CC4E0; --cyan-bg:#17323D; --green:#9CCB7E; --green-bg:#223320;
+  --ok:#6FD39B; --ok-bg:#163326; --bad:#FF9D90; --bad-bg:#3B1E1B; --btn:#A8CEF5; --btn-ink:#0B2038; --soft:#263344;
+  --cat-ink:#F2F6FA;
+  --c-alc:#8A4A3E; --c-ter:#86643A; --c-tra:#76702E; --c-alt:#4D6D35; --c-sem:#2E7565; --c-non:#2E5E8E; --c-alo:#5E4F9A; --c-nob:#8A3F78; --c-lan:#46607F; --c-att:#6B5A48; --c-nd:#2B3746;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141B25; --panel:#1D2734; --ink:#E6ECF3; --muted:#A9B8C8; --navy:#A8CEF5; --line:#34455A;
+  --blue:#5C8DBF; --accent:#F0A260; --accent-bg:#3A2A1B; --cyan:#6CC4E0; --cyan-bg:#17323D; --green:#9CCB7E; --green-bg:#223320;
+  --ok:#6FD39B; --ok-bg:#163326; --bad:#FF9D90; --bad-bg:#3B1E1B; --btn:#A8CEF5; --btn-ink:#0B2038; --soft:#263344;
+  --cat-ink:#F2F6FA;
+  --c-alc:#8A4A3E; --c-ter:#86643A; --c-tra:#76702E; --c-alt:#4D6D35; --c-sem:#2E7565; --c-non:#2E5E8E; --c-alo:#5E4F9A; --c-nob:#8A3F78; --c-lan:#46607F; --c-att:#6B5A48; --c-nd:#2B3746;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55;padding-inline:16px;padding-block:0 96px}
+h1,h2,h3,h4{font-family:var(--f-head);color:var(--navy);line-height:1.2;text-wrap:balance;margin:0}
+h2{font-size:clamp(1.6rem,3.2vw,2.3rem);font-weight:700}
+h3{font-size:1.2rem;font-weight:600}
+p{margin:0}
+a{color:var(--cyan);font-weight:600}
+sub,sup{line-height:0}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;margin-inline:-16px;padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.top b{font-family:var(--f-head);color:var(--navy);font-size:.95rem;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:6px;background:var(--soft);border-radius:3px;flex:0 0 min(30vw,220px);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+button{font:inherit;cursor:pointer;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn{background:var(--btn);color:var(--btn-ink);border:0;border-radius:8px;padding:10px 18px;font-weight:700;font-family:var(--f-head);font-size:.95rem}
+.btn.ghost{background:transparent;color:var(--navy);border:2px solid var(--blue)}
+.btn[disabled]{opacity:.4;cursor:default}
+.wrap{max-width:1180px;margin-inline:auto}
+.slide{padding-block:28px 24px;display:flex;flex-direction:column;gap:22px}
+.slide[hidden]{display:none}
+.eyebrow{font-family:var(--f-head);font-size:.8rem;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.lead{font-size:1.15rem;max-width:68ch;color:var(--ink)}
+.muted{color:var(--muted)}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.grid.two{grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr))}
+.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;min-width:0;display:flex;flex-direction:column;gap:10px}
+.panel{border:2px solid var(--blue)}
+.card ul,.panel ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.tag{display:inline-block;font-family:var(--f-head);font-weight:600;font-size:.8rem;padding:3px 10px;border-radius:99px;background:var(--cyan-bg);color:var(--cyan);align-self:flex-start}
+.tag.o{background:var(--accent-bg);color:var(--accent)} .tag.g{background:var(--green-bg);color:var(--green)}
+.eq{font-family:var(--f-head);font-size:1rem;background:var(--soft);padding:8px 12px;border-radius:8px;overflow-x:auto;white-space:nowrap}
+.try{border:2px dashed var(--accent);border-radius:12px;padding:16px 20px;background:var(--accent-bg);display:flex;flex-direction:column;gap:8px}
+.try h4{color:var(--accent);font-size:1rem}
+.reveal{display:none;border-left:4px solid var(--ok);padding:6px 12px;background:var(--ok-bg)} .reveal.on{display:block}
+.link-row{display:flex;flex-wrap:wrap;gap:10px}
+.link-row a{display:inline-block;padding:9px 16px;border:2px solid var(--blue);border-radius:8px;text-decoration:none;color:var(--navy);font-family:var(--f-head);font-size:.9rem;background:var(--panel)}
+.link-row a:hover{background:var(--soft)}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{background:var(--panel);border:2px solid var(--line);border-radius:8px;padding:7px 14px;font-weight:700;font-size:.9rem}
+.seg button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink);border-color:var(--btn)}
+.foot{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--panel);border-top:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:14px}
+.foot span{font-family:var(--f-head);font-size:.9rem;min-width:6.5em;text-align:center;color:var(--muted);font-variant-numeric:tabular-nums}
+.menu{position:fixed;inset:0;z-index:30;background:rgba(10,18,30,.6);display:flex;justify-content:center;align-items:flex-start;padding:max(16px,env(safe-area-inset-top,0px)) 16px 16px}
+.menu[hidden]{display:none}
+.menu .box{background:var(--panel);border-radius:12px;max-width:560px;width:100%;max-height:100%;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:6px}
+.menu h4{margin-top:10px;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent)}
+.menu button.item{text-align:left;background:none;border:0;padding:7px 8px;border-radius:6px;color:var(--ink)}
+.menu button.item:hover,.menu button.item.cur{background:var(--soft)}
+/* cover */
+.cover{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:28px;align-items:center;padding-block:20px}
+.cover h1{font-size:clamp(2rem,5vw,3.4rem);font-weight:700}
+.atom{width:100%;max-width:380px;margin-inline:auto;aspect-ratio:1}
+.atom .orb{transform-origin:200px 200px;animation:spin 14s linear infinite}
+.atom .o2{animation-duration:20s;animation-direction:reverse}.atom .o3{animation-duration:26s}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.atom .orb{animation:none}}
+/* timeline */
+.tl{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tl button{background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:12px;text-align:left;display:flex;flex-direction:column;gap:2px}
+.tl button b{font-family:var(--f-head);font-size:1.5rem;color:var(--navy)}
+.tl button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-bg)}
+/* mini table prediction */
+.cross{display:grid;grid-template-columns:repeat(3,minmax(0,110px));gap:8px;justify-content:start}
+.cell{border:2px solid var(--line);border-radius:8px;padding:8px;text-align:center;background:var(--panel);font-family:var(--f-head)}
+.cell small{display:block;font-family:var(--f-body);color:var(--muted)}
+.cell.q{border:2px dashed var(--accent);background:var(--accent-bg)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+/* periodic table */
+.ptwrap{overflow-x:auto;padding-bottom:6px}
+.pt{display:grid;grid-template-columns:repeat(18,minmax(46px,1fr));gap:3px;min-width:880px}
+.el{border:1px solid rgba(0,0,0,.18);border-radius:5px;padding:2px 0;text-align:center;font-family:var(--f-head);color:var(--cat-ink);display:flex;flex-direction:column;justify-content:center;min-height:50px;line-height:1.15;transition:opacity .2s}
+.el small{font-size:.65rem;font-family:var(--f-body);opacity:.85}
+.el b{font-size:.98rem}
+.el.sel{outline:3px solid var(--accent);outline-offset:1px;position:relative;z-index:1}
+.el.dim{opacity:.18}
+.el.ph{background:transparent;border:1px dashed var(--line);color:var(--muted);font-size:.62rem}
+.el.nd{background:var(--c-nd)}
+.cat-alc{background:var(--c-alc)}.cat-ter{background:var(--c-ter)}.cat-tra{background:var(--c-tra)}.cat-alt{background:var(--c-alt)}.cat-sem{background:var(--c-sem)}.cat-non{background:var(--c-non)}.cat-alo{background:var(--c-alo)}.cat-nob{background:var(--c-nob)}.cat-lan{background:var(--c-lan)}.cat-att{background:var(--c-att)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.88rem}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:16px;height:16px;border-radius:4px;border:1px solid rgba(0,0,0,.25);display:inline-block}
+.detail{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;min-height:96px}
+.detail .big{width:84px;height:84px;border-radius:10px;border:1px solid rgba(0,0,0,.2);color:var(--cat-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--f-head)}
+.detail .big b{font-size:2rem;line-height:1}.detail .big small{font-size:.8rem}
+.detail dl{margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:4px 16px}
+.detail dt{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.detail dd{margin:0;font-weight:700}
+/* chart */
+.chart{display:flex;flex-direction:column;gap:12px}
+.bars{display:flex;align-items:flex-end;gap:clamp(6px,2vw,18px);height:270px;padding:28px 6px 0;border-bottom:2px solid var(--ink);background:repeating-linear-gradient(to top,transparent 0,transparent 53px,var(--line) 53px,var(--line) 54px)}
+.bcol{flex:1;min-width:0;max-width:96px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px}
+.bcol .v{font-size:.82rem;font-weight:700;font-variant-numeric:tabular-nums;text-align:center;line-height:1.1}
+.bcol .b{width:100%;background:var(--cyan);border-radius:5px 5px 0 0;transition:height .5s}
+.bcol.max .b{background:var(--accent)}
+.bcol.nul .b{background:repeating-linear-gradient(45deg,var(--line),var(--line) 4px,transparent 4px,transparent 8px);border:1px dashed var(--muted)}
+.syms{display:flex;gap:clamp(6px,2vw,18px);padding-inline:6px}
+.syms span{flex:1;max-width:96px;text-align:center;font-family:var(--f-head);font-weight:600}
+.rule{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.rule div{background:var(--soft);border-radius:10px;padding:12px 14px}
+.rule b{font-family:var(--f-head);color:var(--navy);display:block}
+/* quiz */
+.qz{display:flex;flex-direction:column;gap:16px}
+.q{background:var(--panel);border:2px solid var(--blue);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.q p.t{font-weight:700;font-size:1.05rem}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;background:var(--bg);border:2px solid var(--line);border-radius:8px;padding:10px 14px;display:block;width:100%}
+.opt:hover:not([disabled]){border-color:var(--blue)}
+.opt.ok{background:var(--ok-bg);border-color:var(--ok)}.opt.no{background:var(--bad-bg);border-color:var(--bad)}
+.why{display:none;font-size:.95rem;padding:8px 12px;border-radius:8px;background:var(--soft)}.why.on{display:block}
+.score{font-family:var(--f-head);font-weight:600;color:var(--navy)}
+.res{display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.res .num{font-family:var(--f-head);font-size:3rem;font-weight:700;color:var(--navy);line-height:1}
+.rev{display:flex;flex-direction:column;gap:10px;width:100%}
+.rev .it{border-left:5px solid var(--ok);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0}
+.rev .it.err{border-color:var(--bad)}
+/* lewis */
+.lew{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px;align-items:center}
+.lbox{position:relative;width:200px;height:200px;margin-inline:auto;background:var(--panel);border:2px solid var(--blue);border-radius:14px}
+.lbox .sy{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--f-head);font-size:3.4rem;font-weight:700;color:var(--navy)}
+.dot{position:absolute;width:13px;height:13px;border-radius:50%;background:var(--accent);transition:all .25s}
+/* game */
+.game{display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.gel{font-family:var(--f-head);font-size:2.6rem;font-weight:700;color:var(--navy);line-height:1}
+.flip{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
+.flip button{text-align:left;background:var(--panel);border:2px solid var(--blue);border-radius:12px;padding:16px;min-height:120px;display:flex;flex-direction:column;gap:6px}
+.flip button.on{background:var(--ok-bg);border-color:var(--ok)}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:var(--f-head);font-size:.9rem}
+.flow span{background:var(--panel);border:2px solid var(--blue);border-radius:8px;padding:7px 12px}
+.flow i{font-style:normal;color:var(--accent);font-weight:700}
+select{font:inherit;background:var(--panel);color:var(--ink);border:2px solid var(--line);border-radius:8px;padding:6px 10px}
+</style>
+<style>html{color-scheme:light}@media (prefers-color-scheme:dark){html{color-scheme:dark}}body{margin:0}</style>
+</head>
+<body>
+<div class="top"><b id="ttl">Tavola periodica e proprietà periodiche</b><div class="bar" aria-hidden="true"><i id="pg"></i></div><button class="btn ghost" id="mbtn" aria-haspopup="true">Indice</button></div>
+<div class="menu" id="menu" hidden><div class="box" id="mbox"></div></div>
+<main class="wrap" id="deck">
+
+<section class="slide" data-sec="Inizio" data-title="Copertina">
+ <div class="cover">
+  <div style="display:flex;flex-direction:column;gap:16px">
+   <span class="eyebrow">Chimica · liceo · capitolo 12</span>
+   <h1>Tavola periodica e proprietà periodiche</h1>
+   <p class="lead">Dalla lista di 33 sostanze di Lavoisier alla tavola moderna: come gli elementi sono ordinati, perché si comportano in modo simile e come si prevedono le loro proprietà.</p>
+   <div><button class="btn" data-go="1">Inizia il percorso</button></div>
+  </div>
+  <svg class="atom" viewBox="0 0 400 400" role="img" aria-label="Schema di un atomo con tre orbite ed elettroni in movimento">
+   <circle cx="200" cy="200" r="26" fill="var(--accent)"/><circle cx="192" cy="194" r="7" fill="var(--panel)" opacity=".7"/>
+   <g class="orb"><ellipse cx="200" cy="200" rx="170" ry="60" fill="none" stroke="var(--blue)" stroke-width="3"/><circle cx="370" cy="200" r="11" fill="var(--cyan)"/></g>
+   <g class="orb o2" transform="rotate(60 200 200)"><ellipse cx="200" cy="200" rx="170" ry="60" fill="none" stroke="var(--blue)" stroke-width="3"/><circle cx="30" cy="200" r="11" fill="var(--green)"/></g>
+   <g class="orb o3" transform="rotate(120 200 200)"><ellipse cx="200" cy="200" rx="170" ry="60" fill="none" stroke="var(--blue)" stroke-width="3"/><circle cx="370" cy="200" r="11" fill="var(--accent)"/></g>
+  </svg>
+ </div>
+</section>
+
+<section class="slide" data-sec="Inizio" data-title="Il percorso">
+ <span class="eyebrow">Mappa del percorso</span>
+ <h2>Cosa imparerai e come procedere</h2>
+ <p class="lead">Ogni blocco ha spiegazioni, un'attività da svolgere e una verifica rapida. Alla fine c'è un test finale di 15 domande. Tocca un blocco per saltarci subito.</p>
+ <div class="grid" id="paths"></div>
+ <div class="panel"><h3>Obiettivi</h3><ul>
+  <li>Ricostruire come si è arrivati alla tavola periodica, da Lavoisier a Mendeleev fino all'ordinamento per numero atomico.</li>
+  <li>Leggere la tavola: periodi, gruppi, blocchi e famiglie di elementi.</li>
+  <li>Rappresentare gli elettroni di valenza con la struttura di Lewis.</li>
+  <li>Prevedere l'andamento di raggio atomico, energia di ionizzazione, affinità elettronica ed elettronegatività.</li>
+  <li>Distinguere metalli, non metalli e semimetalli dal comportamento chimico.</li>
+ </ul></div>
+</section>
+
+<section class="slide" data-sec="Storia" data-title="Da Lavoisier a Mendeleev">
+ <span class="eyebrow">Storia · 1</span>
+ <h2>Come nasce l'idea di ordinare gli elementi</h2>
+ <p class="lead">Tocca una data per leggere cosa è cambiato.</p>
+ <div class="tl" id="tl"></div>
+ <div class="panel" id="tlbox" aria-live="polite"></div>
+ <div class="try"><h4>Prova tu</h4><p>Con quale criterio sono raggruppate le 4 classi di Lavoisier (gas, metalli, non metalli, terre)? È un criterio chimico o solo fisico? Discutine con il compagno e poi confronta con la risposta.</p>
+  <button class="btn ghost" data-rv="r1" style="align-self:flex-start">Mostra una risposta</button>
+  <div class="reveal" id="r1">Le classi mescolano il criterio fisico (stato gassoso, aspetto metallico) e quello chimico (comportamento nelle reazioni). Mancava una regola unica e quantitativa, che arriverà con la massa atomica e poi con il numero atomico.</div></div>
+</section>
+
+<section class="slide" data-sec="Storia" data-title="Le previsioni di Mendeleev">
+ <span class="eyebrow">Storia · 2</span>
+ <h2>Caselle vuote e inversioni: la forza del metodo</h2>
+ <div class="grid two">
+  <div class="card"><span class="tag o">Elementi che non c'erano ancora</span>
+   <p>Mendeleev pose l'arsenico (As) nel gruppo di azoto (N) e fosforo (P), lasciando <b>due posti vuoti</b> e prevedendo l'esistenza di due elementi allora sconosciuti. Furono scoperti nell'Ottocento: il <b>gallio</b> (1875) e il <b>germanio</b> (1886).</p>
+   <p class="muted">Aveva anche previsto proprietà e massa: per il gallio circa 68, valore misurato 69,7.</p></div>
+  <div class="card"><span class="tag">Quando la massa non basta</span>
+   <p>Per rispettare le proprietà chimiche, tellurio (Te) e iodio (I) sono <b>invertiti</b> rispetto alla massa atomica. Lo stesso accade oggi con argon e potassio.</p>
+   <div class="cross" style="grid-template-columns:repeat(2,minmax(0,130px))"><div class="cell">Te<small>127,6</small></div><div class="cell">I<small>126,9</small></div></div>
+   <p class="muted">Il motivo vero emerse nel 1913: conta il numero atomico, non la massa.</p></div>
+ </div>
+ <div class="panel"><h3>Attività: prevedi come Mendeleev</h3>
+  <p>Cerca il valore della massa atomica del posto vuoto sotto l'alluminio. Conosci i vicini: alluminio sopra, indio sotto. Sposta il cursore sulla tua stima.</p>
+  <div class="cross"><div></div><div class="cell">Al<small>27,0</small></div><div></div><div class="cell">Zn<small>65,4</small></div><div class="cell q">?<small id="gv">70</small></div><div></div><div></div><div class="cell">In<small>114,8</small></div><div></div></div>
+  <label for="gs" class="muted">La tua stima per la massa atomica del posto vuoto</label>
+  <input type="range" id="gs" min="30" max="120" step="1" value="70">
+  <div><button class="btn" id="gchk">Verifica</button></div>
+  <div class="reveal" id="gres" aria-live="polite"></div></div>
+</section>
+
+<section class="slide" data-sec="Storia" data-title="Verifica rapida: storia">
+ <span class="eyebrow">Verifica rapida</span><h2>Storia della tavola periodica</h2>
+ <div class="qz" data-quiz="storia"></div>
+</section>
+
+<section class="slide" data-sec="Tavola moderna" data-title="La tavola moderna">
+ <span class="eyebrow">Tavola moderna</span>
+ <h2>Periodi, gruppi e blocchi</h2>
+ <div class="grid">
+  <div class="card"><h3>Periodi (righe)</h3><p>Gli elementi sono disposti in ordine di numero atomico Z, da sinistra a destra. Si inizia una nuova riga dopo un gas nobile.</p></div>
+  <div class="card"><h3>Gruppi (colonne)</h3><p>Stessa configurazione elettronica esterna, quindi proprietà chimico-fisiche molto simili.</p></div>
+  <div class="card"><h3>Blocchi s, p, d, f</h3><p>Raggruppano gli elementi in base all'orbitale più energetico che contiene elettroni esterni.</p></div>
+ </div>
+ <div class="panel"><div id="t1" class="tbl" data-modes="cat,blk" data-hl="1"></div></div>
+ <div class="try"><h4>Prova tu</h4><p>Con il menu «Evidenzia» scegli il gruppo 17 e poi il periodo 3. Quali elementi trovi? In quale cella si incrociano? Tocca un elemento per leggerne la scheda.</p></div>
+</section>
+
+<section class="slide" data-sec="Tavola moderna" data-title="Laboratorio virtuale PhET">
+ <span class="eyebrow">Laboratorio virtuale</span>
+ <h2>Costruisci un atomo e guarda dove finisce nella tavola</h2>
+ <div class="grid two">
+  <div class="panel"><h3>Simulazione PhET: «Costruisci un atomo»</h3>
+   <p>Costruisci un atomo con protoni, neutroni ed elettroni e osserva come cambiano elemento, massa e carica. Collega direttamente il numero atomico Z alla posizione nella tavola.</p>
+   <div class="link-row"><a href="https://phet.colorado.edu/it/simulations/build-an-atom" target="_blank" rel="noopener">Apri la simulazione</a></div>
+   <p class="muted">Si apre in una nuova scheda. Funziona nel browser, anche da telefono.</p></div>
+  <div class="card"><h3>Scheda di lavoro</h3><ol style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px">
+   <li>Parti da zero protoni e aggiungine uno alla volta. Annota il nome dell'elemento che compare.</li>
+   <li>Con il numero di elettroni uguale a quello dei protoni l'atomo è neutro. Quale carica ottieni togliendone uno?</li>
+   <li>Costruisci litio, sodio e potassio: quanti elettroni ha il livello più esterno? Cosa hanno in comune?</li>
+   <li>Aggiungi neutroni senza cambiare i protoni: cambia l'elemento o solo la massa?</li>
+   <li>Scrivi in due righe perché la tavola è ordinata per numero atomico e non per massa.</li></ol></div>
+ </div>
+</section>
+
+<section class="slide" data-sec="Tavola moderna" data-title="Verifica rapida: tavola">
+ <span class="eyebrow">Verifica rapida</span><h2>Leggere la tavola periodica</h2>
+ <div class="qz" data-quiz="tavola"></div>
+</section>
+
+<section class="slide" data-sec="Famiglie" data-title="Gruppi 1 e 2">
+ <span class="eyebrow">Famiglie di elementi · 1</span>
+ <h2>Metalli alcalini e alcalino-terrosi</h2>
+ <div class="grid two">
+  <div class="card"><span class="tag">Gruppo 1 · Li, Na, K, Rb, Cs, Fr</span>
+   <ul><li>Molli: si tagliano con un coltello.</li>
+   <li>All'aria reagiscono subito con ossigeno e umidità e si coprono di una patina di ossidi, per questo si conservano sotto olio.</li>
+   <li>Con l'acqua liberano idrogeno e calore.</li><li>Un elettrone di valenza: formano ioni con carica +1.</li></ul>
+   <div class="eq">2 Na + 2 H<sub>2</sub>O → 2 NaOH + H<sub>2</sub></div>
+   <p class="muted">Dove li trovi: sodio nel sale da cucina (NaCl), litio nelle batterie, potassio nei fertilizzanti. L'idrogeno è nel gruppo 1 ma non è un metallo alcalino.</p>
+   <div class="link-row"><a href="https://www.youtube.com/watch?v=dVJUXJ6aK3w" target="_blank" rel="noopener">Video dalla lezione</a></div></div>
+  <div class="card"><span class="tag o">Gruppo 2 · Be, Mg, Ca, Sr, Ba, Ra</span>
+   <ul><li>Reagiscono con l'acqua in modo meno violento dei metalli del gruppo 1.</li>
+   <li>Due elettroni di valenza: formano ioni con carica +2.</li></ul>
+   <div class="eq">Ca + 2 H<sub>2</sub>O → Ca(OH)<sub>2</sub> + H<sub>2</sub></div>
+   <div class="eq">CaCO<sub>3</sub> → CaO + CO<sub>2</sub> (con il calore)</div>
+   <p>L'idrossido di calcio è la <b>calce spenta</b>, materiale da costruzione. L'ossido di calcio è la <b>calce viva</b>, usata anche come disinfettante per gli ambienti. Il calcare è carbonato di calcio.</p>
+   <p class="muted">Il calcio è anche il minerale principale di ossa e denti.</p></div>
+ </div>
+ <div class="try"><h4>Prova tu</h4><p>Confronta sodio (gruppo 1) e magnesio (gruppo 2), entrambi nel periodo 3. Quale perde più facilmente l'elettrone esterno? Guarda il grafico dell'energia di ionizzazione, periodo 3, più avanti.</p>
+ <button class="btn ghost" data-rv="r2" style="align-self:flex-start">Mostra una risposta</button><div class="reveal" id="r2">Il sodio: la sua prima energia di ionizzazione (496 kJ/mol) è minore di quella del magnesio (738 kJ/mol). Per questo il sodio è più reattivo.</div></div>
+</section>
+
+<section class="slide" data-sec="Famiglie" data-title="Metalli di transizione e gallio">
+ <span class="eyebrow">Famiglie di elementi · 2</span>
+ <h2>Metalli di transizione e un metallo «scherzoso»</h2>
+ <div class="grid">
+  <div class="card"><span class="tag">Metalli di transizione</span><p>Molto stabili, alcuni molto resistenti.</p>
+   <ul><li><b>Titanio</b>: resistente e leggero (densità circa 4,5 g/cm³ contro 7,8 dell'acciaio) e biocompatibile. Si usa nelle protesi e nell'industria aerospaziale.</li>
+   <li><b>Mercurio</b>: unico metallo liquido a temperatura ambiente (fonde a −39 °C circa). È tossico.</li></ul></div>
+  <div class="card"><span class="tag o">Tra i metalli di transizione, i «preziosi»</span><p>Oro, argento, platino: i più stabili della tavola.</p>
+   <ul><li>Lucenti, duttili, malleabili.</li><li>Buoni conduttori di calore ed elettricità.</li><li>Poco reattivi: non si ossidano facilmente.</li></ul></div>
+  <div class="card"><span class="tag g">Il gallio (gruppo 13)</span><p>Fonde a <b>29,8 °C</b>: in mano si scioglie.</p>
+   <p>Il <b>galinstano</b> è una lega di gallio, indio e stagno, liquida e argentea a temperatura ambiente, usata nei termometri senza mercurio.</p>
+   <p class="muted">È uno dei due elementi previsti da Mendeleev.</p>
+   <div class="link-row"><a href="https://www.youtube.com/watch?v=j5cV1zslEjg" target="_blank" rel="noopener">Video dalla lezione</a></div></div>
+ </div>
+ <div class="try"><h4>Prova tu</h4><p>Perché conviene sostituire il mercurio nei termometri con il galinstano?</p>
+ <button class="btn ghost" data-rv="r3" style="align-self:flex-start">Mostra una risposta</button><div class="reveal" id="r3">Il mercurio è tossico e, se il termometro si rompe, i vapori sono pericolosi. Il galinstano è liquido nello stesso intervallo utile e non ha quella tossicità.</div></div>
+</section>
+
+<section class="slide" data-sec="Famiglie" data-title="Semimetalli e non metalli">
+ <span class="eyebrow">Famiglie di elementi · 3</span>
+ <h2>Semimetalli e non metalli</h2>
+ <div class="grid two">
+  <div class="card"><span class="tag">Semimetalli · B, Si, Ge, As, Sb, Te</span>
+   <p>Si comportano <b>sia da metalli sia da non metalli</b>.</p>
+   <p><b>Silicio</b>: tra gli elementi più abbondanti della crosta terrestre (secondo dopo l'ossigeno). Il suo ossido, la silice, è il componente principale del vetro. È il semiconduttore dei microchip e delle celle fotovoltaiche.</p></div>
+  <div class="card"><span class="tag o">Non metalli</span>
+   <p><b>Carbonio</b>: costituisce tutte le molecole organiche e le biomolecole. Grafite e diamante sono lo stesso elemento con atomi disposti in modo diverso.</p>
+   <p><b>Fosforo, zolfo, azoto, ossigeno</b>: insieme a carbonio e idrogeno formano le molecole della vita (C, H, N, O, P, S).</p>
+   <p class="muted">Azoto e ossigeno costituiscono circa il 78% e il 21% dell'aria.</p></div>
+ </div>
+ <div class="try"><h4>Prova tu</h4><p>Grafite e diamante: stesso elemento, proprietà opposte (uno scrive sulla carta, l'altro taglia il vetro). Cosa cambia tra i due? Cerca come sono legati gli atomi di carbonio.</p></div>
+</section>
+
+<section class="slide" data-sec="Famiglie" data-title="Alogeni e gas nobili">
+ <span class="eyebrow">Famiglie di elementi · 4</span>
+ <h2>Alogeni e gas nobili</h2>
+ <div class="grid two">
+  <div class="card"><span class="tag">Alogeni · gruppo 17</span>
+   <p>Sette elettroni di valenza. A temperatura ambiente sono presenti in tutti e tre gli stati della materia:</p>
+   <div class="flow"><span>Cloro: gas</span><span>Bromo: liquido</span><span>Iodio: solido</span></div>
+   <p class="muted">Il cloro disinfetta l'acqua delle piscine e potabilizza l'acqua. Lo iodio è necessario alla tiroide e si trova nel sale iodato.</p></div>
+  <div class="card"><span class="tag g">Gas nobili · gruppo 18</span>
+   <p>He, Ne, Ar, Kr, Xe, Rn. Hanno il livello esterno completo e quindi <b>bassissima reattività</b>.</p>
+   <ul><li>Elio: palloncini e raffreddamento dei magneti per la risonanza magnetica.</li><li>Neon: insegne luminose.</li><li>Argon: atmosfera protettiva nelle saldature.</li></ul>
+   <p class="muted">Non sono del tutto inerti: lo xeno forma alcuni composti, per esempio con il fluoro.</p></div>
+ </div>
+</section>
+
+<section class="slide" data-sec="Famiglie" data-title="Attività: a che famiglia appartiene?">
+ <span class="eyebrow">Attività</span><h2>A quale famiglia appartiene?</h2>
+ <p class="lead">Dieci elementi estratti a caso. Scegli la famiglia. Se sei in dubbio, chiedi l'indizio sulla posizione.</p>
+ <div class="panel game" id="game"></div>
+</section>
+
+<section class="slide" data-sec="Famiglie" data-title="Verifica rapida: famiglie">
+ <span class="eyebrow">Verifica rapida</span><h2>Le famiglie di elementi</h2>
+ <div class="qz" data-quiz="famiglie"></div>
+</section>
+
+<section class="slide" data-sec="Lewis" data-title="Struttura di Lewis">
+ <span class="eyebrow">Elettroni di valenza</span>
+ <h2>La struttura di Lewis</h2>
+ <p class="lead">Rappresenta con puntini intorno al simbolo gli elettroni dello strato di valenza degli elementi dei gruppi principali. Scegli un elemento.</p>
+ <div class="panel"><div class="seg" id="lsel" role="group" aria-label="Scegli un elemento"></div>
+  <div class="lew"><div class="lbox" id="lbox"></div><div id="linfo" aria-live="polite" style="display:flex;flex-direction:column;gap:8px"></div></div></div>
+ <div class="grid two">
+  <div class="card"><h3>Regola pratica</h3><p>Gruppi 1 e 2: elettroni di valenza uguali al numero del gruppo. Gruppi da 13 a 18: numero del gruppo meno 10. Elio: 2.</p></div>
+  <div class="card"><h3>Esercitati ancora</h3><div class="link-row"><a href="https://www.chimica-online.it/test/esercizi-lewis-1.htm" target="_blank" rel="noopener">Esercizi sulla struttura di Lewis</a><a href="https://www.youtube.com/watch?v=VgVQKCcfwnU" target="_blank" rel="noopener">Tutorial video</a></div></div>
+ </div>
+</section>
+
+<section class="slide" data-sec="Lewis" data-title="Verifica rapida: Lewis">
+ <span class="eyebrow">Verifica rapida</span><h2>Elettroni di valenza</h2>
+ <div class="qz" data-quiz="lewis"></div>
+</section>
+
+<section class="slide" data-sec="Proprietà periodiche" data-title="Le proprietà periodiche">
+ <span class="eyebrow">Proprietà periodiche</span>
+ <h2>Quattro proprietà che variano con regolarità</h2>
+ <p class="lead">Cambiano lungo la tavola perché cambia, in modo periodico, la configurazione elettronica. Qui sotto vedi due di esse come mappa di colore, per gli elementi fino al periodo 5 più cesio e bario.</p>
+ <div class="panel"><div id="t2" class="tbl" data-modes="en,ie"></div></div>
+ <div class="rule">
+  <div><b>Raggio atomico</b>Gruppo ↓ aumenta, periodo → diminuisce</div>
+  <div><b>Energia di ionizzazione</b>Gruppo ↓ diminuisce, periodo → aumenta</div>
+  <div><b>Affinità elettronica</b>Gruppo ↓ diminuisce, periodo → aumenta</div>
+  <div><b>Elettronegatività</b>Gruppo ↓ diminuisce, periodo → aumenta</div>
+ </div>
+</section>
+
+<section class="slide" data-sec="Proprietà periodiche" data-title="Raggio atomico">
+ <span class="eyebrow">Proprietà periodiche · 1</span><h2>Il raggio atomico</h2>
+ <p class="lead">È la metà della distanza minima di avvicinamento tra due atomi dello stesso elemento. Aumenta lungo un gruppo e diminuisce lungo un periodo.</p>
+ <div class="panel"><div class="chart" data-prop="r"></div></div>
+ <div class="card"><h3>Perché</h3><p>Scendendo in un gruppo si aggiunge uno strato di elettroni, quindi l'atomo si allarga. Lungo un periodo gli elettroni restano nello stesso strato ma la carica del nucleo cresce e li attira di più, quindi l'atomo si contrae.</p></div>
+</section>
+
+<section class="slide" data-sec="Proprietà periodiche" data-title="Energia di ionizzazione">
+ <span class="eyebrow">Proprietà periodiche · 2</span><h2>L'energia di prima ionizzazione</h2>
+ <p class="lead">È l'energia necessaria per rimuovere un elettrone da un atomo isolato (kJ/mol). Aumenta lungo un periodo e diminuisce lungo un gruppo.</p>
+ <div class="panel"><div class="chart" data-prop="ie"></div></div>
+ <div class="card"><h3>Perché</h3><p>Più l'elettrone esterno è vicino al nucleo e attratto da una carica elevata, più costa strapparlo. Dove il raggio cresce, l'energia scende: le due proprietà vanno in direzioni opposte.</p></div>
+</section>
+
+<section class="slide" data-sec="Proprietà periodiche" data-title="Affinità elettronica">
+ <span class="eyebrow">Proprietà periodiche · 3</span><h2>L'affinità elettronica</h2>
+ <p class="lead">È l'energia che si libera quando un atomo in fase gassosa cattura un elettrone. Aumenta lungo un periodo e diminuisce lungo un gruppo, con alcune eccezioni.</p>
+ <div class="panel"><div class="chart" data-prop="ea"></div></div>
+ <div class="card"><h3>Perché le eccezioni</h3><p>Berillio, magnesio, azoto e i gas nobili non liberano energia ma ne richiedono: hanno una configurazione già stabile. Il fluoro, molto piccolo, ha un'affinità minore del cloro perché gli elettroni si respingono in uno spazio ridotto.</p></div>
+</section>
+
+<section class="slide" data-sec="Proprietà periodiche" data-title="Elettronegatività">
+ <span class="eyebrow">Proprietà periodiche · 4</span><h2>L'elettronegatività</h2>
+ <p class="lead">Misura la tendenza di un elemento ad attrarre gli elettroni di legame da un altro elemento (scala di Pauling). Aumenta lungo un periodo e diminuisce lungo un gruppo.</p>
+ <div class="panel"><div class="chart" data-prop="en"></div></div>
+ <div class="card"><h3>Da ricordare</h3><p>Il fluoro è l'elemento più elettronegativo (3,98). Gli elementi in basso a sinistra, come cesio e francio, sono i meno elettronegativi. I gas nobili leggeri non hanno valori significativi perché non formano legami.</p></div>
+</section>
+
+<section class="slide" data-sec="Proprietà periodiche" data-title="Verifica rapida: proprietà periodiche">
+ <span class="eyebrow">Verifica rapida</span><h2>Proprietà periodiche</h2>
+ <div class="qz" data-quiz="prop"></div>
+</section>
+
+<section class="slide" data-sec="Metalli e non metalli" data-title="Metalli, non metalli, semimetalli">
+ <span class="eyebrow">Classificazione · 1</span>
+ <h2>Metalli, non metalli e semimetalli</h2>
+ <p class="lead">A seconda delle proprietà fisiche e chimiche gli elementi si dividono in tre grandi insiemi. I semimetalli stanno lungo il confine a scalino tra gli altri due.</p>
+ <div class="panel"><div id="t3" class="tbl" data-modes="typ"></div></div>
+</section>
+
+<section class="slide" data-sec="Metalli e non metalli" data-title="I metalli">
+ <span class="eyebrow">Classificazione · 2</span><h2>I metalli</h2>
+ <div class="grid two">
+  <div class="card"><h3>Proprietà fisiche</h3><p>Più di 80 elementi, nella parte sinistra e centrale della tavola. Solidi (tranne il mercurio), duri, lucenti, malleabili, duttili, buoni conduttori di calore ed elettricità. Dipendono dal tipo di legame tra gli atomi.</p></div>
+  <div class="card"><h3>Proprietà chimiche</h3><p>Dipendono dalla tendenza a <b>perdere elettroni</b> diventando ioni positivi (cationi).</p>
+   <div class="eq">Na → Na<sup>+</sup> + e<sup>−</sup></div><div class="eq">Ca → Ca<sup>2+</sup> + 2 e<sup>−</sup></div></div>
+  <div class="card"><h3>Il blocco f</h3><p>Lantanidi e attinidi hanno caratteristiche metalliche. Gli attinidi sono tutti radioattivi: torio e uranio esistono in natura, gli elementi più pesanti dell'uranio sono in gran parte artificiali.</p></div>
+  <div class="try"><h4>Prova tu</h4><p>Quale ione forma il magnesio (gruppo 2)? E l'alluminio (gruppo 13)?</p>
+   <button class="btn ghost" data-rv="r4" style="align-self:flex-start">Mostra la risposta</button><div class="reveal" id="r4">Mg<sup>2+</sup> (perde 2 elettroni) e Al<sup>3+</sup> (ne perde 3).</div></div>
+ </div>
+</section>
+
+<section class="slide" data-sec="Metalli e non metalli" data-title="Non metalli e semimetalli">
+ <span class="eyebrow">Classificazione · 3</span><h2>Non metalli e semimetalli</h2>
+ <div class="grid two">
+  <div class="card"><h3>Non metalli</h3><p>Occupano la parte destra della tavola. Dipende dalla capacità di <b>accettare elettroni</b> diventando ioni negativi (anioni). Il gruppo 17 sono gli alogeni.</p>
+   <div class="eq">Cl + e<sup>−</sup> → Cl<sup>−</sup></div><div class="eq">O + 2 e<sup>−</sup> → O<sup>2−</sup></div></div>
+  <div class="card"><h3>Semimetalli</h3><p>Hanno comportamento sia metallico sia non metallico e si trovano lungo il confine tra i due insiemi. Il silicio è l'esempio più noto: conduce l'elettricità meglio di un isolante ma peggio di un metallo, ed è la base dell'elettronica.</p></div>
+ </div>
+ <div class="try"><h4>Prova tu</h4><p>Nel menu della tavola precedente il confine fra metalli e non metalli è una linea a scalino. Spiega perché alcuni elementi vicini al confine hanno proprietà intermedie.</p></div>
+</section>
+
+<section class="slide" data-sec="Metalli e non metalli" data-title="Verifica rapida: metalli e non metalli">
+ <span class="eyebrow">Verifica rapida</span><h2>Metalli, non metalli, semimetalli</h2>
+ <div class="qz" data-quiz="tipi"></div>
+</section>
+
+<section class="slide" data-sec="Chiusura" data-title="Ripasso con le carte">
+ <span class="eyebrow">Riepilogo</span><h2>Il filo del discorso</h2>
+ <div class="flow"><span>Elementi noti</span><i>→</i><span>Mendeleev: proprietà ripetute</span><i>→</i><span>Ordine per Z</span><i>→</i><span>Configurazione esterna</span><i>→</i><span>Gruppi e periodi</span><i>→</i><span>Proprietà periodiche</span><i>→</i><span>Metalli, non metalli</span></div>
+ <p class="lead">Tocca una carta, pensa alla risposta e poi leggila.</p>
+ <div class="flip" id="flip"></div>
+</section>
+
+<section class="slide" data-sec="Chiusura" data-title="Test finale">
+ <span class="eyebrow">Test finale</span><h2>15 domande, un'unica prova</h2>
+ <div class="panel" id="final"></div>
+</section>
+
+<section class="slide" data-sec="Chiusura" data-title="Risorse">
+ <span class="eyebrow">Per approfondire</span><h2>Risorse e materiali</h2>
+ <div class="grid two">
+  <div class="card"><h3>Tavole interattive e testi</h3><div class="link-row"><a href="https://ptable.com/?lang=it" target="_blank" rel="noopener">Tavola periodica dinamica</a><a href="http://ebook.scuola.zanichelli.it/atkinschimica/la-tavola-periodica-degli-elementi" target="_blank" rel="noopener">Ebook Zanichelli</a></div></div>
+  <div class="card"><h3>Simulazione e esercizi</h3><div class="link-row"><a href="https://phet.colorado.edu/it/simulations/build-an-atom" target="_blank" rel="noopener">PhET: Costruisci un atomo</a><a href="https://www.chimica-online.it/test/esercizi-lewis-1.htm" target="_blank" rel="noopener">Esercizi di Lewis</a></div></div>
+  <div class="card"><h3>Video</h3><div class="link-row"><a href="https://www.youtube.com/watch?v=dVJUXJ6aK3w" target="_blank" rel="noopener">Metalli alcalini</a><a href="https://www.youtube.com/watch?v=j5cV1zslEjg" target="_blank" rel="noopener">Gallio</a><a href="https://www.youtube.com/watch?v=VgVQKCcfwnU" target="_blank" rel="noopener">Formule di Lewis</a></div></div>
+  <div class="card"><h3>Verifiche della lezione originale</h3><div class="link-row"><a href="https://docs.google.com/presentation/d/1f3ZhKK8abUoh60BiA50ZipX7hI5tkZiStyppGOkh-lw/edit?usp=sharing" target="_blank" rel="noopener">Quiz: tavola periodica</a><a href="https://forms.gle/EK3cnky7JHwxtNHy5" target="_blank" rel="noopener">Verifica con moduli di Google</a></div></div>
+ </div>
+ <p class="muted">Struttura concettuale tratta dalla presentazione sul capitolo 12 (sistema periodico). Valori numerici: elettronegatività su scala di Pauling, raggi covalenti, energie di ionizzazione e affinità elettroniche da tabelle di uso scolastico.</p>
+</section>
+</main>
+<nav class="foot" aria-label="Navigazione"><button class="btn ghost" id="prev">Indietro</button><span id="cnt"></span><button class="btn" id="next">Avanti</button></nav>
+<script>
+(function(){
+"use strict";
+var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+function esc(s){return String(s)}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function fmt(v,d){return v.toFixed(d).replace('.',',')}
+
+/* ---------- dati ---------- */
+var NAMES="H Idrogeno|He Elio|Li Litio|Be Berillio|B Boro|C Carbonio|N Azoto|O Ossigeno|F Fluoro|Ne Neon|Na Sodio|Mg Magnesio|Al Alluminio|Si Silicio|P Fosforo|S Zolfo|Cl Cloro|Ar Argon|K Potassio|Ca Calcio|Sc Scandio|Ti Titanio|V Vanadio|Cr Cromo|Mn Manganese|Fe Ferro|Co Cobalto|Ni Nichel|Cu Rame|Zn Zinco|Ga Gallio|Ge Germanio|As Arsenico|Se Selenio|Br Bromo|Kr Cripto|Rb Rubidio|Sr Stronzio|Y Ittrio|Zr Zirconio|Nb Niobio|Mo Molibdeno|Tc Tecnezio|Ru Rutenio|Rh Rodio|Pd Palladio|Ag Argento|Cd Cadmio|In Indio|Sn Stagno|Sb Antimonio|Te Tellurio|I Iodio|Xe Xeno|Cs Cesio|Ba Bario|La Lantanio|Ce Cerio|Pr Praseodimio|Nd Neodimio|Pm Promezio|Sm Samario|Eu Europio|Gd Gadolinio|Tb Terbio|Dy Disprosio|Ho Olmio|Er Erbio|Tm Tulio|Yb Itterbio|Lu Lutezio|Hf Afnio|Ta Tantalio|W Tungsteno|Re Renio|Os Osmio|Ir Iridio|Pt Platino|Au Oro|Hg Mercurio|Tl Tallio|Pb Piombo|Bi Bismuto|Po Polonio|At Astato|Rn Radon|Fr Francio|Ra Radio|Ac Attinio|Th Torio|Pa Protoattinio|U Uranio|Np Nettunio|Pu Plutonio|Am Americio|Cm Curio|Bk Berchelio|Cf Californio|Es Einsteinio|Fm Fermio|Md Mendelevio|No Nobelio|Lr Laurenzio|Rf Rutherfordio|Db Dubnio|Sg Seaborgio|Bh Bohrio|Hs Hassio|Mt Meitnerio|Ds Darmstadtio|Rg Roentgenio|Cn Copernicio|Nh Nihonio|Fl Flerovio|Mc Moscovio|Lv Livermorio|Ts Tennesso|Og Oganesson".split("|");
+var EL=NAMES.map(function(s,i){var p=s.split(" ");return {z:i+1,s:p[0],n:p[1]}});
+var BYS={};EL.forEach(function(e){BYS[e.s]=e});
+function inList(z,l){return l.indexOf(z)>-1}
+function catOf(z){
+ if(inList(z,[3,11,19,37,55,87]))return "alc";
+ if(inList(z,[4,12,20,38,56,88]))return "ter";
+ if(z>=57&&z<=71)return "lan"; if(z>=89&&z<=103)return "att";
+ if(inList(z,[5,14,32,33,51,52]))return "sem";
+ if(inList(z,[9,17,35,53,85,117]))return "alo";
+ if(inList(z,[2,10,18,36,54,86,118]))return "nob";
+ if(inList(z,[1,6,7,8,15,16,34]))return "non";
+ if((z>=21&&z<=30)||(z>=39&&z<=48)||(z>=72&&z<=80)||(z>=104&&z<=112))return "tra";
+ return "alt";
+}
+var CATN={alc:"Metalli alcalini",ter:"Alcalino-terrosi",tra:"Metalli di transizione",alt:"Altri metalli",sem:"Semimetalli",non:"Non metalli",alo:"Alogeni",nob:"Gas nobili",lan:"Lantanidi",att:"Attinidi"};
+var CATCSS={alc:"cat-alc",ter:"cat-ter",tra:"cat-tra",alt:"cat-alt",sem:"cat-sem",non:"cat-non",alo:"cat-alo",nob:"cat-nob",lan:"cat-lan",att:"cat-att"};
+function typOf(c){return (c==="sem")?"sem":(c==="non"||c==="alo"||c==="nob")?"non":"met"}
+var TYPN={met:"Metalli",non:"Non metalli",sem:"Semimetalli"};
+var TYPCAT={met:"cat-alt",non:"cat-non",sem:"cat-sem"};
+function pos(z){
+ if(z===1)return [1,1]; if(z===2)return [1,18];
+ if(z<=4)return [2,z-2]; if(z<=10)return [2,z+8];
+ if(z<=12)return [3,z-10]; if(z<=18)return [3,z];
+ if(z<=36)return [4,z-18]; if(z<=54)return [5,z-36];
+ if(z<=56)return [6,z-54];
+ if(z<=71)return [9,z-54];
+ if(z<=86)return [6,z-68];
+ if(z<=88)return [7,z-86];
+ if(z<=103)return [10,z-86];
+ return [7,z-100];
+}
+function periodOf(z){var r=pos(z)[0];return r===9?6:r===10?7:r}
+function groupOf(z){var p=pos(z);return p[0]>=9?null:p[1]}
+function blockOf(z){var c=catOf(z);if(c==="lan"||c==="att")return "f";if(z===2)return "s";var g=groupOf(z);if(g<=2)return "s";if(g>=13)return "p";return "d"}
+function valence(z){var g=groupOf(z);if(g===null||(g>=3&&g<=12))return null;if(z===2)return 2;return g<=2?g:g-10}
+var EN={H:2.20,Li:.98,Be:1.57,B:2.04,C:2.55,N:3.04,O:3.44,F:3.98,Na:.93,Mg:1.31,Al:1.61,Si:1.90,P:2.19,S:2.58,Cl:3.16,K:.82,Ca:1.00,Sc:1.36,Ti:1.54,V:1.63,Cr:1.66,Mn:1.55,Fe:1.83,Co:1.88,Ni:1.91,Cu:1.90,Zn:1.65,Ga:1.81,Ge:2.01,As:2.18,Se:2.55,Br:2.96,Kr:3.00,Rb:.82,Sr:.95,Y:1.22,Zr:1.33,Nb:1.6,Mo:2.16,Tc:1.9,Ru:2.2,Rh:2.28,Pd:2.20,Ag:1.93,Cd:1.69,In:1.78,Sn:1.96,Sb:2.05,Te:2.1,I:2.66,Xe:2.6,Cs:.79,Ba:.89};
+var IE={H:1312,He:2372,Li:520,Be:900,B:801,C:1086,N:1402,O:1314,F:1681,Ne:2081,Na:496,Mg:738,Al:578,Si:787,P:1012,S:1000,Cl:1251,Ar:1521,K:419,Ca:590,Sc:633,Ti:659,V:651,Cr:653,Mn:717,Fe:763,Co:760,Ni:737,Cu:745,Zn:906,Ga:579,Ge:762,As:947,Se:941,Br:1140,Kr:1351,Rb:403,Sr:549,Y:600,Zr:640,Nb:652,Mo:684,Tc:702,Ru:710,Rh:720,Pd:804,Ag:731,Cd:868,In:558,Sn:709,Sb:834,Te:869,I:1008,Xe:1170,Cs:376,Ba:503};
+var R={Li:1.28,Be:.96,B:.84,C:.76,N:.71,O:.66,F:.57,Na:1.66,Mg:1.41,Al:1.21,Si:1.11,P:1.07,S:1.05,Cl:1.02,K:2.03,Rb:2.20,Cs:2.44,Br:1.20,I:1.39};
+var EA={Li:60,Be:null,B:27,C:122,N:null,O:141,F:328,Na:53,Mg:null,Al:42,Si:134,P:72,S:200,Cl:349,K:48,Rb:47,Cs:46,Br:325,I:295};
+
+/* ---------- navigazione ---------- */
+var slides=$$("#deck>.slide"), cur=0;
+var menu=$("#menu"), mbox=$("#mbox");
+function buildMenu(){
+ var h="",sec="";
+ slides.forEach(function(s,i){var sc=s.getAttribute("data-sec");if(sc!==sec){h+="<h4>"+sc+"</h4>";sec=sc}
+  h+='<button class="item" data-i="'+i+'">'+(i+1)+". "+s.getAttribute("data-title")+"</button>"});
+ mbox.innerHTML=h+'<button class="btn" id="mclose" style="margin-top:10px">Chiudi</button>';
+}
+function go(i){
+ cur=Math.max(0,Math.min(slides.length-1,i));
+ slides.forEach(function(s,k){s.hidden=(k!==cur)});
+ $("#pg").style.width=((cur+1)/slides.length*100)+"%";
+ $("#cnt").textContent=(cur+1)+" / "+slides.length;
+ $("#ttl").textContent=slides[cur].getAttribute("data-title");
+ $("#prev").disabled=cur===0;$("#next").disabled=cur===slides.length-1;
+ window.scrollTo(0,0);
+ $$(".item",mbox).forEach(function(b){b.classList.toggle("cur",+b.getAttribute("data-i")===cur)});
+}
+buildMenu();
+$("#prev").onclick=function(){go(cur-1)};$("#next").onclick=function(){go(cur+1)};
+$("#mbtn").onclick=function(){menu.hidden=false};
+menu.addEventListener("click",function(e){var t=e.target;if(t===menu||t.id==="mclose"){menu.hidden=true}else if(t.classList.contains("item")){menu.hidden=true;go(+t.getAttribute("data-i"))}});
+document.addEventListener("keydown",function(e){
+ if(e.target&&/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
+ if(e.key==="ArrowRight"||e.key==="PageDown")go(cur+1);else if(e.key==="ArrowLeft"||e.key==="PageUp")go(cur-1);else if(e.key==="Escape")menu.hidden=true});
+document.addEventListener("click",function(e){
+ var t=e.target.closest("[data-go]");if(t)go(+t.getAttribute("data-go"));
+ var r=e.target.closest("[data-rv]");if(r){var el=document.getElementById(r.getAttribute("data-rv"));el.classList.toggle("on");r.textContent=el.classList.contains("on")?"Nascondi la risposta":"Mostra la risposta"}
+});
+
+/* percorso */
+var PATHS=[["Storia",2,"Da Lavoisier a Mendeleev, previsioni e inversioni."],["Tavola moderna",5,"Periodi, gruppi, blocchi e simulazione PhET."],["Famiglie di elementi",8,"Alcalini, transizione, semimetalli, alogeni, gas nobili."],["Struttura di Lewis",14,"Elettroni di valenza con i puntini."],["Proprietà periodiche",16,"Raggio, ionizzazione, affinità, elettronegatività."],["Metalli e non metalli",22,"Come si comportano e che ioni formano."],["Test finale",27,"15 domande con correzione finale."]];
+$("#paths").innerHTML=PATHS.map(function(p,i){return '<button class="card" style="text-align:left;border:2px solid var(--blue)" data-go="'+(p[1])+'"><span class="tag '+(i%3===1?"o":i%3===2?"g":"")+'">Blocco '+(i+1)+'</span><h3>'+p[0]+'</h3><span class="muted">'+p[2]+'</span></button>'}).join("");
+
+/* timeline */
+var TL=[{y:"1789",n:"Lavoisier",t:"Pubblica una lista di 33 sostanze semplici raggruppate in 4 classi: gas, metalli, non metalli ed elementi terrosi. La lista comprendeva anche luce e calorico, che oggi non consideriamo elementi."},
+ {y:"1869",n:"Mendeleev",t:"Dispone gli elementi con proprietà simili in colonne: 7 colonne rappresentano gruppi con caratteristiche simili, ogni riga contiene elementi con proprietà via via diverse. Le proprietà si ripetono riga dopo riga, periodicamente: nasce la tavola periodica."},
+ {y:"1913",n:"Moseley",t:"Misurando gli spettri a raggi X degli elementi, Moseley mostra che l'ordine corretto è quello del numero atomico Z, cioè del numero di protoni. Le inversioni di Mendeleev (Te e I) trovano la spiegazione."}];
+(function(){
+ var h=$("#tl"),b=$("#tlbox");
+ h.innerHTML=TL.map(function(x,i){return '<button data-i="'+i+'" aria-pressed="'+(i===1)+'"><b>'+x.y+'</b><span>'+x.n+'</span></button>'}).join("");
+ function show(i){$$("button",h).forEach(function(k,j){k.setAttribute("aria-pressed",j===i)});b.innerHTML="<h3>"+TL[i].y+", "+TL[i].n+"</h3><p>"+TL[i].t+"</p>"}
+ h.addEventListener("click",function(e){var t=e.target.closest("button");if(t)show(+t.getAttribute("data-i"))});show(1);
+})();
+
+/* previsione gallio */
+(function(){
+ var s=$("#gs"),v=$("#gv"),res=$("#gres");
+ s.oninput=function(){v.textContent=s.value;res.classList.remove("on")};
+ $("#gchk").onclick=function(){
+  var x=+s.value,d=Math.abs(x-69.7),m;
+  if(d<=3)m="Ottimo. Il gallio ha massa atomica 69,7. Mendeleev, con un ragionamento simile, ne previde circa 68.";
+  else if(d<=10)m="Vicino. La media tra i vicini verticali (27,0 e 114,8) è circa 71, e il valore reale del gallio è 69,7.";
+  else m="Lontano. Prova con la media tra alluminio (27,0) e indio (114,8): circa 71. Il valore reale del gallio è 69,7.";
+  res.innerHTML=m;res.classList.add("on")};
+})();
+
+/* ---------- tavola ---------- */
+var HEAT={en:{d:EN,min:.7,max:4,lab:"Elettronegatività (Pauling)"},ie:{d:IE,min:370,max:2400,lab:"Prima energia di ionizzazione (kJ/mol)"}};
+function heat(v,k){var h=HEAT[k],t=(v-h.min)/(h.max-h.min);t=Math.max(0,Math.min(1,t));
+ var l=Math.round(92-t*52);return {bg:"hsl(205,75%,"+l+"%)",fg:l<62?"#FFFFFF":"#10243C"}}
+function mountTable(host){
+ var modes=host.getAttribute("data-modes").split(","),mode=modes[0],hl=host.getAttribute("data-hl"),sel=null,hlv="none";
+ var MN={cat:"Per famiglia",blk:"Per blocco",typ:"Per tipo",en:"Elettronegatività",ie:"Energia di ionizzazione"};
+ host.innerHTML='<div style="display:flex;flex-direction:column;gap:12px"><div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center"><div class="seg" data-r="m"></div><span data-r="hl"></span></div><div class="ptwrap"><div class="pt" data-r="g"></div></div><div class="legend" data-r="lg"></div><div class="detail card" data-r="d" aria-live="polite"></div></div>';
+ var segE=$("[data-r=m]",host),grid=$("[data-r=g]",host),lg=$("[data-r=lg]",host),det=$("[data-r=d]",host);
+ if(modes.length>1)segE.innerHTML=modes.map(function(m){return '<button data-m="'+m+'" aria-pressed="'+(m===mode)+'">'+MN[m]+'</button>'}).join("");else segE.remove();
+ if(hl){var o='<option value="none">nessuno</option>';for(var p=1;p<=7;p++)o+='<option value="p'+p+'">periodo '+p+'</option>';for(var g=1;g<=18;g++)o+='<option value="g'+g+'">gruppo '+g+'</option>';
+  $("[data-r=hl]",host).innerHTML='<label>Evidenzia: <select>'+o+'</select></label>';$("select",host).onchange=function(){hlv=this.value;paint()}} else $("[data-r=hl]",host).remove();
+ var cells={};
+ EL.forEach(function(e){var p=pos(e.z),b=document.createElement("button");b.className="el";b.style.gridRow=p[0];b.style.gridColumn=p[1];
+  b.innerHTML="<small>"+e.z+"</small><b>"+e.s+"</b>";b.setAttribute("aria-label",e.n+", numero atomico "+e.z);b.setAttribute("data-z",e.z);grid.appendChild(b);cells[e.z]=b});
+ [[6,3,"57–71"],[7,3,"89–103"]].forEach(function(x){var d=document.createElement("div");d.className="el ph";d.style.gridRow=x[0];d.style.gridColumn=x[1];d.textContent=x[2];grid.appendChild(d)});
+ function legend(){
+  var h="";
+  if(mode==="cat")h=Object.keys(CATN).map(function(k){return '<span><i class="'+CATCSS[k]+'"></i>'+CATN[k]+'</span>'}).join("");
+  else if(mode==="blk")h=[["cat-alc","s"],["cat-non","p"],["cat-tra","d"],["cat-lan","f"]].map(function(x){return '<span><i class="'+x[0]+'"></i>blocco '+x[1]+'</span>'}).join("");
+  else if(mode==="typ")h=Object.keys(TYPN).map(function(k){return '<span><i class="'+TYPCAT[k]+'"></i>'+TYPN[k]+'</span>'}).join("");
+  else {var k=mode;h='<span><i style="background:'+heat(HEAT[k].min,k).bg+'"></i>valore basso</span><span><i style="background:'+heat(HEAT[k].max,k).bg+'"></i>valore alto</span><span><i style="background:var(--c-nd)"></i>dato non mostrato</span><span class="muted">'+HEAT[k].lab+'</span>'}
+  lg.innerHTML=h}
+ function paint(){
+  EL.forEach(function(e){var b=cells[e.z],c=catOf(e.z);b.className="el";b.style.background="";b.style.color="";
+   if(mode==="cat")b.classList.add(CATCSS[c]);
+   else if(mode==="blk")b.classList.add({s:"cat-alc",p:"cat-non",d:"cat-tra",f:"cat-lan"}[blockOf(e.z)]);
+   else if(mode==="typ")b.classList.add(TYPCAT[typOf(c)]);
+   else {var v=HEAT[mode].d[e.s];if(v==null)b.classList.add("nd");else{var h=heat(v,mode);b.style.background=h.bg;b.style.color=h.fg}}
+   if(hlv!=="none"){var ok=hlv[0]==="p"?periodOf(e.z)===+hlv.slice(1):groupOf(e.z)===+hlv.slice(1);if(!ok)b.classList.add("dim")}
+   if(sel===e.z)b.classList.add("sel")});
+  legend();detail()}
+ function detail(){
+  if(!sel){det.innerHTML='<p class="muted" style="grid-column:1/-1">Tocca un elemento per vedere la sua scheda.</p>';return}
+  var e=EL[sel-1],c=catOf(sel),g=groupOf(sel),v=valence(sel);
+  var bg=getComputedStyle(cells[sel]).backgroundColor;
+  var h='<div class="big" style="background:'+bg+'"><small>'+e.z+'</small><b>'+e.s+'</b></div><dl><div><dt>Nome</dt><dd>'+e.n+'</dd></div><div><dt>Periodo</dt><dd>'+periodOf(sel)+'</dd></div><div><dt>Gruppo</dt><dd>'+(g===null?(c==="lan"?"blocco f (lantanidi)":"blocco f (attinidi)"):g)+'</dd></div><div><dt>Blocco</dt><dd>'+blockOf(sel)+'</dd></div><div><dt>Famiglia</dt><dd>'+CATN[c]+'</dd></div><div><dt>Tipo</dt><dd>'+TYPN[typOf(c)]+'</dd></div><div><dt>Elettroni di valenza</dt><dd>'+(v===null?"variabili":v)+'</dd></div>';
+  if(EN[e.s]!=null)h+='<div><dt>Elettronegatività</dt><dd>'+fmt(EN[e.s],2)+'</dd></div>';
+  if(IE[e.s]!=null)h+='<div><dt>1ª ionizzazione</dt><dd>'+IE[e.s]+' kJ/mol</dd></div>';
+  det.innerHTML=h+'</dl>'}
+ grid.addEventListener("click",function(ev){var b=ev.target.closest(".el[data-z]");if(!b)return;sel=+b.getAttribute("data-z");paint()});
+ segE.addEventListener("click",function(ev){var b=ev.target.closest("button");if(!b)return;mode=b.getAttribute("data-m");$$("button",segE).forEach(function(x){x.setAttribute("aria-pressed",x===b)});paint()});
+ paint();
+}
+$$(".tbl").forEach(mountTable);
+
+/* ---------- grafici ---------- */
+var PR={r:{d:R,u:" Å",dec:2,t:"Raggio covalente (Å)"},ie:{d:IE,u:"",dec:0,t:"Prima energia di ionizzazione (kJ/mol)"},ea:{d:EA,u:"",dec:0,t:"Affinità elettronica (kJ/mol)"},en:{d:EN,u:"",dec:2,t:"Elettronegatività (scala di Pauling)"}};
+var SER={p2:{n:"Periodo 2",e:["Li","Be","B","C","N","O","F"],noble:"Ne",dir:"Z crescente da sinistra a destra"},p3:{n:"Periodo 3",e:["Na","Mg","Al","Si","P","S","Cl"],noble:"Ar",dir:"Z crescente da sinistra a destra"},g1:{n:"Gruppo 1",e:["Li","Na","K","Rb","Cs"],dir:"dall'alto verso il basso"},g17:{n:"Gruppo 17",e:["F","Cl","Br","I"],dir:"dall'alto verso il basso"}};
+var NOTE={
+ r:{p2:"Da Li a F il raggio diminuisce: stesso strato, carica nucleare crescente.",p3:"Stessa tendenza del periodo 2: da Na a Cl l'atomo si contrae.",g1:"Scendendo nel gruppo si aggiungono strati: il raggio aumenta.",g17:"Anche per gli alogeni il raggio aumenta scendendo nel gruppo."},
+ ie:{p2:"Tendenza ad aumentare, con due eccezioni: il boro ha un valore minore del berillio e l'ossigeno minore dell'azoto. Il neon, gas nobile, ha il valore più alto.",p3:"Stessa tendenza, con le stesse due eccezioni: Al minore di Mg, S minore di P. L'argon ha il valore più alto.",g1:"Scendendo nel gruppo diminuisce: l'elettrone esterno è più lontano dal nucleo. Il cesio perde l'elettrone più facilmente.",g17:"Diminuisce scendendo nel gruppo: il fluoro trattiene i suoi elettroni più di tutti."},
+ ea:{p2:"Cresce verso destra ma non in modo regolare: Be e N non liberano energia (barre tratteggiate). Il neon non è mostrato.",p3:"Andamento simile al periodo 2: Mg non libera energia, il cloro ha il valore massimo.",g1:"I metalli alcalini hanno affinità bassa e quasi costante: tendono a perdere elettroni, non a catturarli.",g17:"Eccezione: il cloro supera il fluoro. Per il resto il valore diminuisce scendendo nel gruppo."},
+ en:{p2:"Aumenta da Li a F. Il fluoro è l'elemento più elettronegativo (3,98).",p3:"Aumenta da Na a Cl, come nel periodo 2.",g1:"Diminuisce scendendo nel gruppo, ma di poco: i metalli alcalini sono tutti poco elettronegativi.",g17:"Diminuisce scendendo nel gruppo: F > Cl > Br > I."}
+};
+function mountChart(host){
+ var k=host.getAttribute("data-prop"),sk="p2",P=PR[k];
+ host.innerHTML='<div class="seg" data-r="s" role="group" aria-label="Scegli la serie"></div><div class="muted" data-r="t"></div><div class="bars" data-r="b"></div><div class="syms" data-r="y"></div><p data-r="n" aria-live="polite"></p>';
+ var seg=$("[data-r=s]",host);
+ seg.innerHTML=Object.keys(SER).map(function(s){return '<button data-s="'+s+'" aria-pressed="'+(s===sk)+'">'+SER[s].n+'</button>'}).join("");
+ function draw(){
+  var S=SER[sk],list=S.e.slice();if(k==="ie"&&S.noble)list.push(S.noble);
+  var vals=list.map(function(s){return P.d[s]}),mx=Math.max.apply(null,vals.filter(function(v){return v!=null}));
+  var bars="",syms="";
+  list.forEach(function(s,i){var v=vals[i],nul=(v==null);
+   var lab=nul?"≤ 0":fmt(v,P.dec);
+   bars+='<div class="bcol'+(nul?" nul":"")+(!nul&&v===mx?" max":"")+'"><span class="v">'+lab+'</span><div class="b" style="height:'+(nul?6:Math.max(3,v/mx*86))+'%"></div></div>';
+   syms+="<span>"+s+"</span>"});
+  $("[data-r=t]",host).textContent=P.t+" · "+S.n+" ("+S.dir+")";
+  $("[data-r=b]",host).innerHTML=bars;$("[data-r=y]",host).innerHTML=syms;
+  $("[data-r=n]",host).textContent=NOTE[k][sk]}
+ seg.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;sk=b.getAttribute("data-s");$$("button",seg).forEach(function(x){x.setAttribute("aria-pressed",x===b)});draw()});
+ draw();
+}
+$$(".chart").forEach(mountChart);
+
+/* ---------- verifiche ---------- */
+// la prima opzione è sempre quella corretta, poi vengono mescolate
+var QZ={
+storia:[
+ {q:"Chi pubblicò nel 1789 una lista di 33 elementi chimici raggruppati in 4 classi?",o:["Lavoisier","Mendeleev","Dalton","Moseley"],w:"Fu Lavoisier. Mendeleev è del 1869."},
+ {q:"Perché Mendeleev lasciò alcune caselle vuote nella sua tabella?",o:["Prevedeva l'esistenza di elementi ancora sconosciuti","Gli elementi erano radioattivi","Per un errore di stampa","Non gli servivano per il suo schema"],w:"I vuoti corrispondevano a elementi da scoprire, come gallio e germanio, di cui previde le proprietà."},
+ {q:"Quale coppia è invertita rispetto alla massa atomica per rispettare le proprietà chimiche?",o:["Tellurio e iodio","Sodio e potassio","Litio e berillio","Cloro e bromo"],w:"Te (127,6) precede I (126,9) perché Te somiglia a S e Se, mentre I somiglia a Cl e Br."},
+ {q:"Quale grandezza fu riconosciuta come criterio corretto di ordinamento nel 1913?",o:["Il numero atomico","La densità","Il punto di fusione","La data di scoperta"],w:"Moseley collegò l'ordine degli elementi al numero atomico, cioè al numero di protoni."}],
+tavola:[
+ {q:"Con quale criterio sono disposti gli elementi nella tavola periodica moderna?",o:["Numero atomico crescente","Massa atomica crescente","Ordine alfabetico","Data di scoperta"],w:"L'ordine è per numero atomico Z."},
+ {q:"Che cosa hanno in comune gli elementi di uno stesso gruppo?",o:["La configurazione elettronica esterna","Lo stesso numero di protoni","La stessa massa","Lo stesso numero di strati"],w:"La stessa configurazione esterna spiega le proprietà simili."},
+ {q:"Quando si inizia una nuova riga (periodo)?",o:["Dopo un gas nobile","Dopo ogni metallo","Dopo 8 elementi, sempre","Dopo un alogeno"],w:"Ogni periodo termina con un gas nobile."},
+ {q:"Il sodio ha Z = 11 e un elettrone nel livello più esterno (3). Dove si trova?",o:["Periodo 3, gruppo 1","Periodo 1, gruppo 11","Periodo 2, gruppo 1","Periodo 3, gruppo 11"],w:"Il livello esterno è il terzo, quindi periodo 3; un elettrone di valenza, quindi gruppo 1."},
+ {q:"Un elemento il cui elettrone più energetico occupa un orbitale p appartiene al blocco:",o:["p","s","d","f"],w:"Il blocco prende il nome dall'orbitale occupato dall'ultimo elettrone."}],
+famiglie:[
+ {q:"Perché i metalli alcalini si conservano sotto olio?",o:["Reagiscono con ossigeno e umidità dell'aria","Sono radioattivi","Evaporano facilmente","Sono troppo duri"],w:"All'aria si coprono subito di ossidi e con l'acqua reagiscono liberando idrogeno."},
+ {q:"Completa: Ca + 2 H₂O → ? + H₂",o:["Ca(OH)₂","CaO","CaCO₃","CaH₂O"],w:"Si forma l'idrossido di calcio, detto calce spenta."},
+ {q:"Qual è l'unico metallo liquido a temperatura ambiente?",o:["Mercurio","Gallio","Piombo","Stagno"],w:"Il mercurio fonde a circa −39 °C. Il gallio fonde a 29,8 °C, quindi a 20 °C è ancora solido."},
+ {q:"Il silicio è:",o:["Un semimetallo e semiconduttore","Un metallo alcalino","Un gas nobile","Un alogeno"],w:"Sta sul confine tra metalli e non metalli ed è la base di chip e celle fotovoltaiche."},
+ {q:"A temperatura ambiente gli alogeni cloro, bromo, iodio sono rispettivamente:",o:["Gas, liquido, solido","Solido, gas, liquido","Liquido, solido, gas","Tutti gas"],w:"Sono presenti in tutti e tre gli stati della materia."},
+ {q:"Perché i gas nobili sono poco reattivi?",o:["Hanno il livello esterno completo","Hanno un solo elettrone esterno","Hanno troppi protoni","Sono tutti radioattivi"],w:"La configurazione esterna completa è molto stabile."}],
+lewis:[
+ {q:"Quanti puntini ha la struttura di Lewis del cloro (gruppo 17)?",o:["7","5","8","17"],w:"Gruppo 17 significa 17 − 10 = 7 elettroni di valenza."},
+ {q:"Quale elemento ha 4 elettroni di valenza?",o:["Carbonio","Ossigeno","Sodio","Neon"],w:"Il carbonio è nel gruppo 14: 14 − 10 = 4."},
+ {q:"Quanti elettroni di valenza ha il magnesio?",o:["2","1","12","8"],w:"Il magnesio è nel gruppo 2: 2 elettroni di valenza."},
+ {q:"Che cosa rappresenta una struttura di Lewis?",o:["Gli elettroni dello strato di valenza","Tutti i protoni del nucleo","La massa dell'atomo","Il raggio atomico"],w:"I puntini sono gli elettroni di valenza, usati per i gruppi principali."}],
+prop:[
+ {q:"Lungo un periodo, da sinistra a destra, il raggio atomico:",o:["Diminuisce","Aumenta","Resta costante","Prima aumenta e poi diminuisce"],w:"La carica nucleare cresce e attira di più gli elettroni dello stesso strato."},
+ {q:"Scendendo lungo un gruppo l'energia di prima ionizzazione:",o:["Diminuisce","Aumenta","Resta costante","Si annulla"],w:"L'elettrone esterno è più lontano dal nucleo e si toglie più facilmente."},
+ {q:"Quale elemento è il più elettronegativo?",o:["Fluoro","Ossigeno","Cloro","Cesio"],w:"Il fluoro ha elettronegatività 3,98."},
+ {q:"Tra sodio e cloro (stesso periodo), quale ha energia di ionizzazione maggiore?",o:["Cloro","Sodio","Sono uguali","Dipende dal numero di neutroni"],w:"Lungo il periodo l'energia di ionizzazione aumenta: cloro 1251 contro sodio 496 kJ/mol."},
+ {q:"Tra litio e potassio, quale ha raggio atomico maggiore?",o:["Potassio","Litio","Hanno lo stesso raggio","Non si può dire"],w:"Il potassio ha uno strato in più: scendendo nel gruppo il raggio aumenta."},
+ {q:"L'affinità elettronica è:",o:["L'energia che si libera quando un atomo gassoso cattura un elettrone","L'energia per strappare un elettrone","La metà della distanza tra due nuclei","La capacità di attrarre gli elettroni di legame"],w:"Le altre definizioni sono energia di ionizzazione, raggio atomico ed elettronegatività."}],
+tipi:[
+ {q:"Dove si trovano i metalli nella tavola?",o:["A sinistra e al centro","Solo in basso","A destra","Solo lungo il confine a scalino"],w:"Sono più di 80 e occupano la parte sinistra e centrale."},
+ {q:"Dal punto di vista chimico, i metalli tendono a:",o:["Perdere elettroni diventando ioni positivi","Acquistare elettroni diventando ioni negativi","Non scambiare mai elettroni","Perdere protoni"],w:"Formano cationi, come Na⁺ e Ca²⁺."},
+ {q:"Quale ione forma tipicamente il cloro?",o:["Cl⁻","Cl⁺","Cl²⁺","Cl non forma ioni"],w:"Ha 7 elettroni di valenza e ne cattura uno."},
+ {q:"I semimetalli si trovano:",o:["Lungo il confine tra metalli e non metalli","Nel gruppo 1","Nel blocco f","Nel gruppo 18"],w:"Hanno comportamento intermedio, per questo stanno al confine."},
+ {q:"Quale affermazione sugli attinidi è corretta?",o:["Sono tutti radioattivi","Sono tutti gas","Sono non metalli","Sono tutti naturali e stabili"],w:"Torio e uranio esistono in natura, gli altri sono in gran parte artificiali."}]
+};
+var FINAL=[
+ QZ.storia[0],QZ.storia[1],QZ.tavola[0],QZ.tavola[1],QZ.tavola[3],
+ QZ.famiglie[0],QZ.famiglie[1],
+ {q:"Il gallio fonde a 29,8 °C. Che cosa succede se lo tieni in mano?",o:["Fonde","Resta solido","Evapora","Si incendia"],w:"La temperatura della mano supera il punto di fusione."},
+ QZ.famiglie[3],QZ.famiglie[4],
+ {q:"Quanti elettroni di valenza ha il fosforo (gruppo 15)?",o:["5","3","15","8"],w:"15 − 10 = 5."},
+ QZ.prop[0],QZ.prop[1],QZ.prop[2],QZ.tipi[2]];
+function mkq(item){var idx=shuffle([0,1,2,3].slice(0,item.o.length));return {q:item.q,w:item.w,opts:idx.map(function(i){return {t:item.o[i],ok:i===0}})}}
+function mountQuiz(host){
+ var items=QZ[host.getAttribute("data-quiz")].map(mkq),done=0,good=0;
+ host.innerHTML=items.map(function(it,i){return '<div class="q" data-i="'+i+'"><p class="t">'+(i+1)+". "+it.q+'</p><div class="opts">'+it.opts.map(function(o,j){return '<button class="opt" data-j="'+j+'">'+o.t+'</button>'}).join("")+'</div><div class="why"></div></div>'}).join("")+'<p class="score" aria-live="polite"></p>';
+ host.addEventListener("click",function(e){
+  var b=e.target.closest(".opt");if(!b||b.disabled)return;
+  var q=b.closest(".q"),it=items[+q.getAttribute("data-i")],j=+b.getAttribute("data-j");
+  $$(".opt",q).forEach(function(x,k){x.disabled=true;if(it.opts[k].ok)x.classList.add("ok")});
+  var w=$(".why",q);
+  if(it.opts[j].ok){good++;w.innerHTML="<b>Esatto.</b> "+it.w}else{b.classList.add("no");w.innerHTML="<b>Non proprio.</b> "+it.w}
+  w.classList.add("on");done++;
+  if(done===items.length)$(".score",host).textContent="Risultato: "+good+" su "+items.length+(good===items.length?". Ottimo, puoi proseguire.":". Rileggi le spiegazioni e passa avanti quando sei pronto.")});
+}
+$$("[data-quiz]").forEach(mountQuiz);
+
+/* test finale */
+(function(){
+ var host=$("#final"),items,i,ans,locked;
+ function start(){items=FINAL.map(mkq);i=0;ans=[];ask()}
+ function ask(){
+  if(i>=items.length)return result();
+  var it=items[i];
+  host.innerHTML='<div class="qz"><p class="score">Domanda '+(i+1)+' di '+items.length+'</p><div class="bar" style="flex:none;width:100%"><i style="width:'+(i/items.length*100)+'%"></i></div><p class="t" style="font-weight:700;font-size:1.15rem">'+it.q+'</p><div class="opts">'+it.opts.map(function(o,j){return '<button class="opt" data-j="'+j+'" aria-pressed="false">'+o.t+'</button>'}).join("")+'</div><div><button class="btn" id="fnext" disabled>'+(i===items.length-1?"Concludi":"Avanti")+'</button></div></div>';
+  var sel=null;
+  $$(".opt",host).forEach(function(b){b.onclick=function(){sel=+b.getAttribute("data-j");$$(".opt",host).forEach(function(x){x.style.borderColor="";x.style.background=""});b.style.borderColor="var(--accent)";b.style.background="var(--accent-bg)";$("#fnext").disabled=false}});
+  $("#fnext").onclick=function(){ans.push(sel);i++;ask()};
+ }
+ function result(){
+  var good=0,rev="";
+  items.forEach(function(it,k){var ok=it.opts[ans[k]].ok;if(ok)good++;
+   var right=it.opts.filter(function(o){return o.ok})[0].t;
+   rev+='<div class="it'+(ok?"":" err")+'"><b>'+(k+1)+". "+it.q+'</b><br>'+(ok?"Risposta corretta: ":"La tua risposta: "+it.opts[ans[k]].t+". Risposta corretta: ")+right+'. <span class="muted">'+it.w+'</span></div>'});
+  var v=(good/items.length*10);
+  var m=good>=13?"Preparazione solida.":good>=9?"Hai le basi, rivedi i punti sbagliati.":"Rivedi i blocchi del percorso e riprova.";
+  host.innerHTML='<div class="res"><span class="eyebrow">Risultato</span><div class="num">'+good+' / '+items.length+'</div><p class="lead">Voto in decimi: <b>'+fmt(v,1)+'</b>. '+m+'</p><div><button class="btn" id="fre">Rifai il test</button></div><div class="rev">'+rev+'</div></div>';
+  $("#fre").onclick=start;
+ }
+ host.innerHTML='<div class="res"><p class="lead">Quindici domande a risposta multipla su tutto il percorso. Le risposte vengono corrette alla fine, con la spiegazione per ognuna. Le opzioni cambiano ordine a ogni tentativo.</p><button class="btn" id="fgo">Inizia il test</button></div>';
+ $("#fgo").onclick=start;
+})();
+
+/* gioco famiglie */
+(function(){
+ var host=$("#game");
+ var POOL=[["Na","alc"],["K","alc"],["Li","alc"],["Ca","ter"],["Mg","ter"],["Ba","ter"],["Fe","tra"],["Au","tra"],["Hg","tra"],["Ti","tra"],["Si","sem"],["Ge","sem"],["Sb","sem"],["C","non"],["S","non"],["O","non"],["Cl","alo"],["Br","alo"],["I","alo"],["Ne","nob"],["Ar","nob"],["He","nob"]];
+ var FN=[["alc","Metalli alcalini"],["ter","Alcalino-terrosi"],["tra","Di transizione"],["sem","Semimetalli"],["non","Non metalli"],["alo","Alogeni"],["nob","Gas nobili"]];
+ var set,k,pts;
+ function start(){set=shuffle(POOL).slice(0,10);k=0;pts=0;next()}
+ function next(){
+  if(k>=set.length){host.innerHTML='<p class="gel">'+pts+' / 10</p><p class="lead">'+(pts>=9?"Ottimo.":pts>=6?"Buon risultato, riprova per migliorare.":"Guarda la tavola con il menu «Per famiglia» e riprova.")+'</p><button class="btn" id="gre">Riprova</button>';$("#gre").onclick=start;return}
+  var e=BYS[set[k][0]];
+  host.innerHTML='<span class="score">Elemento '+(k+1)+' di 10</span><div class="gel">'+e.s+' <span style="font-size:1.2rem;font-weight:500">'+e.n+'</span></div><div class="seg" id="gb">'+FN.map(function(f){return '<button data-f="'+f[0]+'">'+f[1]+'</button>'}).join("")+'</div><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="btn ghost" id="gh">Indizio sulla posizione</button><span id="gm" class="muted" aria-live="polite"></span></div>';
+  $("#gh").onclick=function(){var g=groupOf(e.z);$("#gm").textContent="Periodo "+periodOf(e.z)+", "+(g===null?"blocco f":"gruppo "+g)+"."};
+  $("#gb").onclick=function(ev){var b=ev.target.closest("button");if(!b||b.disabled)return;
+   var ok=b.getAttribute("data-f")===set[k][1];if(ok)pts++;
+   $$("#gb button").forEach(function(x){x.disabled=true;if(x.getAttribute("data-f")===set[k][1])x.style.cssText="background:var(--ok-bg);border-color:var(--ok)"});
+   if(!ok)b.style.cssText="background:var(--bad-bg);border-color:var(--bad)";
+   $("#gm").textContent=(ok?"Esatto: ":"Non proprio: ")+e.n+" è "+CATN[set[k][1]].toLowerCase()+".";
+   var n=document.createElement("button");n.className="btn";n.textContent=k===9?"Vedi il punteggio":"Prossimo";n.onclick=function(){k++;next()};$("#gm").parentNode.appendChild(n)}}
+ start();
+})();
+
+/* Lewis */
+(function(){
+ var sel=$("#lsel"),box=$("#lbox"),info=$("#linfo"),z0=17;
+ var main=EL.filter(function(e){return e.z<=18});
+ sel.innerHTML=main.map(function(e){return '<button data-z="'+e.z+'" aria-pressed="'+(e.z===z0)+'" aria-label="'+e.n+'">'+e.s+'</button>'}).join("");
+ function sides(n){var s=[0,0,0,0];if(n===1)s[0]=1;else if(n===2)s[0]=2;else{s[0]=2;var r=n-2;for(var k=0;k<r;k++){s[1+(k%3)]++}}return s}
+ var XY=[[[0,-1],[0,1]],[[1,0],[1,0]],[[0,1],[0,-1]],[[-1,0],[-1,0]]];
+ function draw(z){
+  var e=EL[z-1],n=valence(z),s=sides(n);
+  var h='<div class="sy">'+e.s+'</div>';
+  // posizioni: 0 alto, 1 destra, 2 basso, 3 sinistra; due puntini per lato
+  var C=100,D=62,G=11;
+  for(var side=0;side<4;side++)for(var k=0;k<s[side];k++){
+   var off=(k===0)?-G:G,x,y;
+   if(side===0){x=C+off;y=C-D}else if(side===2){x=C+off;y=C+D}else if(side===1){x=C+D;y=C+off}else{x=C-D;y=C+off}
+   if(s[side]===1){if(side%2===0)x=C;else y=C}
+   h+='<span class="dot" style="left:'+(x-6.5)+'px;top:'+(y-6.5)+'px"></span>'}
+  box.innerHTML=h;
+  info.innerHTML='<h3>'+e.n+' ('+e.s+')</h3><p>Numero atomico <b>'+z+'</b>, periodo <b>'+periodOf(z)+'</b>, gruppo <b>'+groupOf(z)+'</b>.</p><p>Elettroni di valenza: <b>'+n+'</b>.</p><p class="muted">'+(n===8||z===2?"Livello esterno completo: gas nobile, poco reattivo.":n<=3?"Tende a perdere elettroni.":n>=6?"Tende ad acquistare elettroni.":"Comportamento intermedio.")+'</p>'}
+ sel.addEventListener("click",function(ev){var b=ev.target.closest("button");if(!b)return;$$("button",sel).forEach(function(x){x.setAttribute("aria-pressed",x===b)});draw(+b.getAttribute("data-z"))});
+ draw(z0);
+})();
+
+/* carte di ripasso */
+(function(){
+ var C=[["Con quale criterio ordina gli elementi la tavola moderna?","Per numero atomico crescente. Le proprietà si ripetono periodicamente."],
+ ["Che cosa accomuna gli elementi di un gruppo?","La configurazione elettronica esterna, quindi il comportamento chimico."],
+ ["Come variano raggio atomico ed energia di ionizzazione?","Raggio: aumenta nel gruppo verso il basso, diminuisce nel periodo verso destra. Energia di ionizzazione: l'opposto."],
+ ["Perché il fluoro è l'elemento più elettronegativo?","È piccolo e ha una forte carica nucleare efficace: attrae molto gli elettroni di legame."],
+ ["Che ioni formano metalli e non metalli?","I metalli perdono elettroni e formano cationi. I non metalli li acquistano e formano anioni."],
+ ["Perché i gas nobili sono poco reattivi?","Hanno il livello esterno completo, una configurazione molto stabile."]];
+ var h=$("#flip");
+ h.innerHTML=C.map(function(c,i){return '<button data-i="'+i+'"><b style="font-family:var(--f-head);color:var(--navy)">'+c[0]+'</b><span class="muted">Tocca per la risposta</span></button>'}).join("");
+ h.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var i=+b.getAttribute("data-i"),on=b.classList.toggle("on");
+  b.innerHTML='<b style="font-family:var(--f-head);color:var(--navy)">'+C[i][0]+'</b><span>'+(on?C[i][1]:'<span class="muted">Tocca per la risposta</span>')+'</span>'});
+})();
+
+go(0);
+})();
+</script>
+
+</body>
+</html>
